@@ -12,9 +12,9 @@ fn main() {
     let mut rng = rand::thread_rng();
     let range = Uniform::new(0, 20);
     let weights: Vec<i32> = (0..4).map(|_| rng.sample(&range)).collect();
+    let input_weights: EdgeVariants = EdgeVariants::ArrOfi32(weights);
     
     let edges = vec![("1", "2"), ("2", "4"), ("1", "11"), ("4", "11")];
-    let input_weights: EdgeVariants = EdgeVariants::ArrOfi32(weights);
     let input_edges: EdgeVariants = EdgeVariants::ArrOfTuples(edges);
 
     // some incorrect inputs for assertion
@@ -80,10 +80,19 @@ impl<'a> DAG<'a> {
     }
 
     fn create_node_paths_dict(&self)->HashMap<&str, Vec<&str>>{
+        
         let mut connections_dict: HashMap<&str, Vec<&str>> = HashMap::new();
         let mut connections: Vec<(&str, &str)> = Vec::new();
-        if let EdgeVariants::ArrOfTuples(a) = &self.edges{
-            connections.extend(a);
+
+        match &self.edges {
+            EdgeVariants::ArrOfTuples(a) => {
+                connections.extend(a);
+            },
+            EdgeVariants::ArrOfStrings(_a) =>  panic!("\n\n *MyErrorMessage => You passed an array of strings\n, instead of an array of sting slice tuples*\n\n"),
+            EdgeVariants::ArrOfi32(_a) =>  panic!("\n\n *MyErrorMessage => You passed an array of integers\n instead of an array of sting slice tuples*\n\n"),
+            EdgeVariants::OnlyString(_a) =>  panic!("\n\n *MyErrorMessage => You passed a strings\n instead of an array of sting slice tuples*\n\n"),
+            EdgeVariants::ArrOfTuples(_a) => 
+            panic!("\n\n*MyErrMessage: ***invalid input***\n\n")
         }
         for (source,target) in connections{
             connections_dict.entry(source).or_insert_with(Vec::new).push(target);
